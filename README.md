@@ -34,7 +34,7 @@
 
 **Get-Atomic-Coord.pl**
 
-    This script parses Gaussian 09 or ADF outfiles for molecular coordinates.
+    This script parses Gaussian 09, ORCA, or ADF outfiles for molecular coordinates.
     Can search for lowest energy structure, or extract coordinates from a specific step.
     Check comments of code for specific option instructions. 
     usage: 

@@ -6,9 +6,6 @@
 ##                                                                                          #
 ## AUTHORS :: William Christian Isley III                                                   #
 ##                                                                                          #
-## DISCLAIMER :: This script is provided "as-is", without any warranties or support.        #
-## The authors assume no liability or responsiblity for the use of                          #
-## this software.                                                                           #
 ##                                                                                          #
 ## SOFTWARE :: This script was created using Perl v 5.20                                    #
 ## This script has dependency on the pacakges, Getopt::Long,                                #
@@ -17,6 +14,13 @@
 ## INPUT :: This script has been tested to function with regularly formated Gaussian 09     #
 ## And Protein Databank (pdb) files                                                         #
 ##                                                                                          #       
+##                                                                                          #
+## DISCLAIMER :: This program is free software: you can redistribute it and/or modify       #
+## it under the terms of the GNU General Public License as published by the Free Software   #
+## Foundation, either version 3 of the License, or any later version                        #
+## This program is distributed in the hope that it will be useful, but WIHOUT ANY WARRANTY  #
+## without even the implied warranty of MERCANTABILITY or FITNESS FOR A PARTICULAR PURPOSE  #
+## See the GNU General Public License for more details.                                     #
 ##                                                                                          #
 #############################################################################################
 

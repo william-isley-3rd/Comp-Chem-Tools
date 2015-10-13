@@ -31,7 +31,7 @@
     usage: 
         perl G09-QuasiHarmonic-Freq-Corr.pl --help
 
-**Get-Atomic-Coord.pl **
+**Get-Atomic-Coord.pl**
 
     This script parses Gaussian 09 or ADF outfiles for molecular coordinates.
     Can search for lowest energy structure, or extract coordinates from a specific step.
@@ -39,7 +39,7 @@
     usage: 
         perl Get-Atomic-Coord.pl --help
 
-**Protein-Cluster-Gen.pl   **
+**Protein-Cluster-Gen.pl**
 
     This script can generate molecular clusters from pdb or gaussian (pdb formated) files. 
     See help file for further details.

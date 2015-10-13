@@ -24,12 +24,13 @@
 
 **G09-QuasiHarmonic-Freq-Corr.pl**
 
-    This script performs the quasiharmonic oscillator frequency corrections for G09 Freq jobs. 
-    Default is 50 cm^-1. Script can vary temperature, cutoff frequency, 
-    introduce a universal frequency scaling factor, and can handle a TS calculation. 
-    Recommended usage: place in ~/bin directory
+    This script performs the quasiharmonic oscillator frequency corrections for G09 Freq jobs
+    The default is to replace frequencies lower than 50 cm^-1. 
+    The script can also vary recompute thermodynamic quantities changing T (temperature),
+    the cutoff frequency (50 cm^-1 to any number), and introduce a universal frequency 
+    scaling factor. The script can handle geometric minima and saddle points (TS).
     usage: 
-        perl G09-QuasiHarmonic-Freq-Corr.pl --help
+        perl ~/bin/G09-QuasiHarmonic-Freq-Corr.pl --help
 
 **Get-Atomic-Coord.pl**
 
@@ -37,11 +38,11 @@
     Can search for lowest energy structure, or extract coordinates from a specific step.
     Check comments of code for specific option instructions. 
     usage: 
-        perl Get-Atomic-Coord.pl --help
+        perl ~/bin/Get-Atomic-Coord.pl --help
 
 **Protein-Cluster-Gen.pl**
 
     This script can generate molecular clusters from pdb or gaussian (pdb formated) files. 
     See help file for further details.
     usage: 
-        perl Protein-Cluster-Gen.pl --help
+        perl ~/bin/Protein-Cluster-Gen.pl --help

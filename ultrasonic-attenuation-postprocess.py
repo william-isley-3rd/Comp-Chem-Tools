@@ -25,7 +25,13 @@ __author__ = 'William Isley III'
 #                                       NOTE ON UNITS                                       #
 #                         SI Units are used throughout the code.                            #
 #############################################################################################
-#                                   ------------                                            #
+# This software will compute the High Resolution Ultra-sonic Spectra (HRUS) for a given     #
+# particle size distribution. This is currently specified as a sum of log-normal            #
+# distributions that are specifed by the user in the code below. This is then compared to   #
+# experimentally measured HRUS data.  The code will randomly sample about the specified     #
+# distribution and print out the set of best fit particle size distibutions.                #
+#############################################################################################
+#                                    ------------                                           #
 # 				                     NOMENCLATURE                                           # 
 # 				                     ------------                                           # 
 # __________________________________________________________________________________________#
@@ -64,6 +70,7 @@ __author__ = 'William Isley III'
 pi = cmath.pi
 
 
+# Function definitions up here, explanation of how code works in main section below
 def define_parameters():
     """ No Input
         Defines all global input parameters. This function must be called in order to work
@@ -90,6 +97,7 @@ def define_parameters():
     kappa_solv = 1 / (c_solv ** 2 * rho_solv)
 
 
+# Computes the Ultrasonic Attenuation as a function of particle radius, frequency of probe and population of particle
 def compute_alpha_of_r_freq(r_j, freq, num_j):
     """ r_j: float, freq: float, num_j: int
         radius of particle j, frequency probed, number / volume of particle j"""
@@ -230,7 +238,7 @@ def make_random_gaussian_list(mean, mean_width, sigma, sigma_width, samples=1000
     return random_list
 
 
-# This part reads in the excel file, and parses it into dataframse
+# This part reads in the excel file, and parses it into dataframe
 path_in = 'C:/Users/isle132/Documents/NGDE/HRUS Data/From Forrest Test Data'
 # exp_data_file = 'gold_50nm_test_input.xls'
 exp_data_file = 'silica_140nm_test_input.xlsx'

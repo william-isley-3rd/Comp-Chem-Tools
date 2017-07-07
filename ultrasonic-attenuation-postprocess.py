@@ -9,7 +9,7 @@ __author__ = 'William Isley III'
 
 #############################################################################################
 #                                                                                           #
-# VERSION :: 0.1.1  March 2017                                                              #
+# VERSION :: 0.1.2  July  2017                                                              #
 #                                                                                           #
 # AUTHORS :: William Christian Isley III                                                    #
 #                                                                                           #
@@ -68,6 +68,8 @@ __author__ = 'William Isley III'
 # A_0, A_1              Scattering Coefficients
 
 pi = cmath.pi
+np.random.seed(42)
+ppf_list = np.arange(0.01, 0.99, step=0.01)
 
 
 # Function definitions up here, explanation of how code works in main section below
@@ -212,15 +214,10 @@ def compute_propagation_constant(prop_ratio, freq_sample, c_base, alphaf2_base, 
 
 
 def compute_lognorm_dist(concentration, mean_r, sigma_r):
-    min_r = 1
-    max_r = lognorm.ppf(0.99, s=np.log(sigma_r), scale=mean_r, loc=0)
-    list_r = np.arange(min_r, max_r, step=1)
+    list_r = lognorm.ppf(ppf_list, s=np.log(sigma_r), scale=mean_r, loc=0)
     list_numdensity = []
     for i in list_r:
         list_numdensity.append(lognorm.pdf(i, np.log(sigma_r), loc=0, scale=mean_r))
-        # probability = pow(2*pi, -0.5) * 0.5 * 1 / (i * np.log(sigma)) * \
-        #         np.exp(- 0.5 * pow(np.log(i/r_mean)/np.log(sigma), 2))
-        # numdensity_list.append(concentration * probability)
 
     list_numdensity /= np.sum(list_numdensity)
     list_numdensity *= concentration
@@ -233,18 +230,18 @@ def make_random_gaussian_list(mean, mean_width, sigma, sigma_width, samples=1000
                                    np.random.normal(sigma, scale=sigma_width, size=samples)))
     # remove list values with sigma's <= 1, these will cause NaN errors in log normal
     random_list = random_list[
-        np.logical_not(np.logical_or(random_list[:, 1] <= 1.0, random_list[:, 0] <= 1))
+        np.logical_not(np.logical_or(random_list[:, 1] <= 1.0, random_list[:, 0] <= 1.0))
     ]
     return random_list
 
 
-# This part reads in the excel file, and parses it into dataframe
+# This part reads in the excel file, and parses it into dataframse
 path_in = 'C:/Users/isle132/Documents/NGDE/HRUS Data/From Forrest Test Data'
-# exp_data_file = 'gold_50nm_test_input.xls'
-exp_data_file = 'silica_140nm_test_input.xlsx'
+exp_data_file = 'gold_50nm_test_input.xls'
+# exp_data_file = 'silica_140nm_test_input.xlsx'
 path_out = 'C:/Users/isle132/Documents/NGDE/HRUS Data/From Forrest Test Data/'
-# outfile = 'gold_50nm_test_out.xls'
-outfile = 'silica_140nm_test_out.xls'
+outfile = 'gold_50nm_test_out3.xls'
+# outfile = 'silica_140nm_test_out.xls'
 
 # This part parses the input excel file, defines the parameters set
 # and reads in the measurements
@@ -265,12 +262,12 @@ df_all_exp_data['Baseline Cell'].apply(np.int64)
 # the width determines how wide the sample is
 # A broad scan will serve well as a first pass, then try to hone in on hotspots
 # that have a low SSD value
-test_mean = 140
-test_mean_width = 5
-test_sigma = 2.0
+test_mean = 25
+test_mean_width = 10
+test_sigma = 1.0
 test_sigma_width = 1
 col_for_df = ['r_mean', 'sigma']
-seed_values = make_random_gaussian_list(test_mean, test_mean_width, test_sigma, test_sigma_width, samples=10)
+seed_values = make_random_gaussian_list(test_mean, test_mean_width, test_sigma, test_sigma_width, samples=10000)
 df_rmean_sigma_sample = pd.DataFrame(seed_values, columns=col_for_df)
 test_concentration = 50 * 10 ** -3 * 10 ** -3 * 6.022 * 10 ** 23
 r_min = 1
@@ -311,7 +308,7 @@ for index, measurement in df_all_exp_data.iterrows():
         # compute speed and attenuation
         c_theory, alpha_theory = compute_propagation_constant(prop_ratio_theory, freq_test,
                                                               c_base, alphaf2_base, freq_base)
-        ssd = pow((c_theory - c_test)/c_test, 2) + pow((alpha_theory - alphaf2_test)/alphaf2_test, 2)
+        ssd = pow((c_theory - c_test), 2) + pow((alpha_theory - alphaf2_test), 2)
         time_list.append(time)
         c_temp_list.append(c_theory)
         alpha_temp_list.append(alpha_theory)
@@ -324,7 +321,20 @@ for index, measurement in df_all_exp_data.iterrows():
     df_rmean_sigma_sample['alpha ' + str(index)] = pd.Series(alpha_temp_list)
     df_rmean_sigma_sample['SSD ' + str(index)] = pd.Series(ssd_temp_list)
 
-df_rmean_sigma_sample.sort_values('SSD 1').to_csv(path_out+outfile, sep='\t')
+ssd_cols = [col for col in df_rmean_sigma_sample if 'SSD' in col]
+df_rmean_sigma_sample['SSD AVG'] = df_rmean_sigma_sample[ssd_cols].mean(axis=1)
+reorder_cols = ['r_mean', 'sigma', 'SSD AVG'] + [col for col in df_rmean_sigma_sample if col not in ('r_mean', 'sigma', 'SSD AVG')]
+df_rmean_sigma_sample = df_rmean_sigma_sample[reorder_cols]
+df_rmean_sigma_sample.sort_values('SSD AVG').to_csv(path_out+outfile, sep='\t')
+
+(x, y, z) = (df_rmean_sigma_sample['r_mean'], df_rmean_sigma_sample['sigma'], df_rmean_sigma_sample['SSD AVG'])
+plt.hexbin(x, y, C=z, gridsize=200, cmap='gnuplot')
+plt.ylabel('sigma (nm)')
+plt.xlabel('r_mean (nm)')
+cb = plt.colorbar()
+cb.set_label('SSD AVG')
+plt.show()
+
 # r_num_list_all = compute_lognorm_dist(test_concentration, mean_radius, std_dev)
 # plt.plot(r_num_list_all[:, 0], r_num_list_all[:, 1])
 # plt.axis([0, 500, 0, 0.1])

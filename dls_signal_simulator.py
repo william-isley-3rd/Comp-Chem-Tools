@@ -69,7 +69,7 @@ n_ref_EtOH = 1.361             # refractive index of ethanol
 T = 298.1                  # 25 degree C
 rho = 2.165 * 1000         # density
 wavelength = wave_532      # 532 nm in angstroms
-angle = angle_90           # in backscatter mode
+angle = angle_back           # in backscatter mode
 eta = eta_EtOH             # viscosity of ethanol at 25 degrees C
 n_refraction = n_ref_EtOH  # using ethanol
 beta = 1.0                 # correction factor dependent on the geometry, and alignment of laser
@@ -77,22 +77,36 @@ beta = 1.0                 # correction factor dependent on the geometry, and al
 g_scaler = 0.95
 concentration = 1.0
 N_0 = concentration
-distribution_list = [[N_0 / np.log(1.25), 1500/2, 1.25]]
-# distribution_list = [[N_0 / np.log(1.2), 2500, 1.2],
-#                      [1*10**14*N_0 / np.log(1.5), 5, 1.5]]
+# The distribution list gives the following parameters
+# 1) Concentration
+# 2) the log-normal scale parameter
+# 3) the log-normal shape parameter
+# Note, these are not the arithmetic mean and standard deviation
+distribution_list = [[N_0 / np.log(1.25), 1590/2, 1.1]]
+# distribution_list = [[N_0 / np.log(1.2), 4000, 1.2],
+#                      [5*10**12*N_0 / np.log(1.5), 3, 1.5]]
 
+print(len(distribution_list))
+if len(distribution_list) <= 1:
+    mu = np.log(distribution_list[0][1])
+    sigma = np.log(distribution_list[0][2])
+    mean = np.exp(mu + 0.5 * sigma**2) / 10
+    std_dev = pow(np.exp(2*(mu + sigma**2)) - np.exp(2*mu + sigma**2), 1/2) / 10
+    print('The radius mean is ', mean, 'nm \nThe radius SD is ', std_dev, 'nm\n')
 # q is computed from the experimental properties
 # refraction index
 # wavelength - choose between wave_532 and wave_488
 # scattering angle - choose between angle_45, angle_90, angle_180
+# q is the scattering vector
 q = (4 * pi * n_refraction / wavelength) * np.sin(angle / 2)            # in 1 / Angstroms
-c_gamma = 2 * boltz * T * pow(q * (10**10), 2) / (3 * pi * eta) * (10**10)  # in Angstroms / s
+# c_gamma is 2 * q^2 * D_r where D_r is the stokes-einstein diffusivity prefactor (D = D_r /r)
+c_gamma = 2 * boltz * T * pow(q * (10**10), 2) / (6 * pi * eta) * (10**10)  # in Angstroms / s
 
 
 def lognorm_f(x, triple_list):
-    [pf, r_mean, sigma] = triple_list
-    a = 1 / (2 * pow(np.log(sigma), 2))
-    mu = np.log(r_mean)
+    [pf, r_scale, shape] = triple_list
+    a = 1 / (2 * pow(np.log(shape), 2))  # 1 / 2 sigma**2
+    mu = np.log(r_scale)  # r_mean
     return pf / x * np.exp(-pow(np.log(x) - mu, 2) * a)
 
 
@@ -177,7 +191,7 @@ time_list_us = [x * 10**6 for x in time_list]
 # This section of the code reads in the experimental data, and plots it to compare results.
 # Import the data from the .correlation.csv file
 # Plot the delay time vs correlation
-path_in = 'C:/Users\isle132/Desktop/For Python/140 nm Silica Data/173 deg/Cell Center'
+path_in = 'C:/Users/isle132/Desktop/For Python/140 nm Silica Data/173 deg/Cell Center'
 
 os.chdir(path_in)  # go to the path specified
 cor_files = glob.glob('*.correlation.csv')
@@ -198,7 +212,7 @@ for name, group in cor_groups:
 # plt.figure(1)
 # plt.subplot(211)
 ax1.plot(time_list_us, g_t_scale_list, linestyle='None', marker='o',  alpha=0.3)
-# plt.axis([10**(-7), 1, 0, 1])
+# plt.axis([10**(-1), 1*10**6, 0, 1])
 plt.title('Predicted Autocorrelation using Lognormal Distributions')
 plt.xlabel('Time (us)')
 plt.ylabel('$g^{(1)}$(t)')
@@ -221,7 +235,7 @@ for dist_index, dist_curve in enumerate(distribution_list):
     cdf_np_mat[dist_index] = dist_curve[0] * lognorm.cdf(r_space, s=np.log(dist_curve[2]), scale=dist_curve[1], loc=0)
     norm_factor += dist_curve[0]
 
-# determine the r quantiles for the cdfs 
+# determine the r quantiles for the cdfs
 cdf = cdf_np_mat.sum(axis=0) / norm_factor
 cdf_10 = (np.abs(cdf-0.1)).argmin()
 cdf_25 = (np.abs(cdf-0.25)).argmin()
